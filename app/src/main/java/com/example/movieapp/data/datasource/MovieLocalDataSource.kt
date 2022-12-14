@@ -15,4 +15,6 @@ class MovieLocalDataSource(private val movieDao: MovieDao) {
     suspend fun save(movies: List<Movie>) {
         movieDao.insertMovies(movies)
     }
+
+    suspend fun size(): Int = movieDao.movieCount()
 }

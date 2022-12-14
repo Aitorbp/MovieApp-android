@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment
 
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.movieapp.R
 
 import com.example.movieapp.data.MoviesRepository
@@ -29,6 +31,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
         val binding = FragmentMainBinding.bind(view).apply {
             recycler.adapter = adapter
+
+            val layoutManager = recycler.layoutManager as GridLayoutManager
+
+            recycler.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    viewModel.notifyLastVisible(layoutManager.findLastVisibleItemPosition())
+                }
+            })
         }
 
         viewLifecycleOwner.launchAndCollect(viewModel.state) {

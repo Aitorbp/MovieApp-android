@@ -1,6 +1,5 @@
 package com.example.movieapp.ui.main
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,7 +15,10 @@ class MainViewModel(private val moviesRepository: MoviesRepository) : ViewModel(
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
+
+
     init {
+        notifyLastVisible(0)
         viewModelScope.launch {
             moviesRepository.popularMovies
                 .catch { cause -> _state.update { it.copy(error = cause.toError()) } }
@@ -30,6 +32,14 @@ class MainViewModel(private val moviesRepository: MoviesRepository) : ViewModel(
             val error = moviesRepository.requestPopularMovies()
             _state.update { _state.value.copy(loading = false, error = error) }
         }
+    }
+
+    fun notifyLastVisible(lastVisibleItem: Int) {
+        viewModelScope.launch {
+            moviesRepository.checkRequireNewPage(lastVisibleItem)
+            _state.value = _state.value.copy(loading = false)
+        }
+
     }
 
     data class UiState(

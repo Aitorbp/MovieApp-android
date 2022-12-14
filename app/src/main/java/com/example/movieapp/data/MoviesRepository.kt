@@ -14,13 +14,19 @@ class MoviesRepository(application: App) {
     private val localDataSource = MovieLocalDataSource(application.db.movieDao())
     private val remoteDataSource = MovieRemoteDataSource(application.getString(R.string.api_key))
 
+    companion object {
+        const val PAG_SIZE = 10
+        const val PAG_THRESHOLD = 6
+        const val INITIAL_PAGE = 1
+    }
+
     val popularMovies = localDataSource.movies
 
     fun findById(id: Int): Flow<Movie> = localDataSource.findById(id)
 
     suspend fun requestPopularMovies(): Error? = tryCall {
         if (localDataSource.isEmpty()) {
-            val movies = remoteDataSource.findPopularMovies(regionRepository.findLastRegion())
+            val movies = remoteDataSource.findPopularMovies(1, regionRepository.findLastRegion())
             localDataSource.save(movies.results.toLocalModel())
         }
     }
@@ -28,6 +34,16 @@ class MoviesRepository(application: App) {
     suspend fun switchFavorite(movie: Movie): Error? = tryCall {
         val updatedMovie = movie.copy(favorite = !movie.favorite)
         localDataSource.save(listOf(updatedMovie))
+    }
+
+    suspend fun checkRequireNewPage(lastVisibleItem: Int) {
+        val size = localDataSource.size()
+
+        if(lastVisibleItem >= size - PAG_THRESHOLD) {
+            val page = size / PAG_SIZE + 1
+            val newMovies = remoteDataSource.findPopularMovies(page, regionRepository.findLastRegion())
+            localDataSource.save(newMovies.results.toLocalModel())
+        }
     }
 
 }

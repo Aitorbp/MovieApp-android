@@ -24,11 +24,20 @@ class MoviesRepository(application: App) {
 
     fun findById(id: Int): Flow<Movie> = localDataSource.findById(id)
 
+    fun findByMovie(title: String): Flow<List<Movie>> = localDataSource.findByMovie(title)
+
     suspend fun requestPopularMovies(): Error? = tryCall {
         if (localDataSource.isEmpty()) {
-            val movies = remoteDataSource.findPopularMovies(1, regionRepository.findLastRegion())
+            val movies = remoteDataSource.findPopularMovies(INITIAL_PAGE, regionRepository.findLastRegion())
             localDataSource.save(movies.results.toLocalModel())
         }
+    }
+
+    suspend fun requestPopularMoviesAfterFilter(): Error? = tryCall {
+
+            val movies = remoteDataSource.findPopularMovies(INITIAL_PAGE, regionRepository.findLastRegion())
+            localDataSource.save(movies.results.toLocalModel())
+
     }
 
     suspend fun switchFavorite(movie: Movie): Error? = tryCall {

@@ -1,9 +1,11 @@
 package com.example.movieapp.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 
 import android.view.View
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +15,7 @@ import com.example.movieapp.data.MoviesRepository
 import com.example.movieapp.databinding.FragmentMainBinding
 import com.example.movieapp.ui.common.app
 import com.example.movieapp.ui.common.launchAndCollect
+import kotlinx.coroutines.flow.filter
 
 class MainFragment : Fragment(R.layout.fragment_main) {
 
@@ -46,6 +49,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             binding.loading = it.loading
             binding.movies = it.movies
             binding.error = it.error?.let(mainState::errorToString)
+        }
+
+        binding.etFilter.addTextChangedListener { filter ->
+            Log.i("aitor", filter.toString())
+                    viewModel.filterMovie(filter.toString())
         }
 
         mainState.requestLocationPermission {
